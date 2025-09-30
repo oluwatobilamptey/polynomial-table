@@ -57,12 +57,20 @@
   }
 )
 
+;; Computational Node Owners Map
+(define-map computational-node-owners
+  { node-id: uint }
+  {
+    owner: principal
+  }
+)
+
 ;; Request Counter for Generating Unique Request IDs
 (define-data-var request-counter uint u0)
 
 ;; Private Functions
 (define-private (is-computational-node-owner (node-id uint) (sender principal))
-  (match (get owner (map-get? computational-node-owners node-id))
+  (match (get owner (map-get? computational-node-owners { node-id: node-id }))
     owner (is-eq sender owner)
     false
   )
@@ -112,7 +120,7 @@
     (end-block (+ block-height duration-blocks))
   )
     ;; Validate node existence
-    (asserts! (is-some (map-get? computational-node-owners node-id)) ERR-NODE-NOT-FOUND)
+    (asserts! (is-some (map-get? computational-node-owners { node-id: node-id })) ERR-NODE-NOT-FOUND)
     
     ;; Payment validation
     (asserts! (> payment-amount u0) ERR-INVALID-PARAMETERS)
@@ -150,17 +158,17 @@
 (define-public (approve-computational-access (request-id uint))
   (let (
     (sender tx-sender)
-    (request (unwrap! (map-get? computational-access-requests { request-id: request-id }) ERR-REQUEST-NOT-FOUND))
+    (request (unwrap! (map-get? computational-access-requests { request-id: request-id }) (err ERR-REQUEST-NOT-FOUND)))
     (node-id (get node-id request))
     (requester (get requester request))
     (end-block (get end-block request))
     (payment-amount (get payment-amount request))
   )
     ;; Validate node ownership
-    (asserts! (is-computational-node-owner node-id sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-computational-node-owner node-id sender) (err ERR-NOT-AUTHORIZED))
     
     ;; Validate request status
-    (asserts! (is-eq (get status request) STATUS-PENDING) ERR-REQUEST-ALREADY-PROCESSED)
+    (asserts! (is-eq (get status request) STATUS-PENDING) (err ERR-REQUEST-ALREADY-PROCESSED))
     
     ;; Update access request
     (map-set computational-access-requests
@@ -189,11 +197,11 @@
 (define-public (revoke-computational-access (node-id uint) (requester principal))
   (let (
     (sender tx-sender)
-    (permission (unwrap! (map-get? computational-node-permissions { node-id: node-id, requester: requester }) ERR-REQUEST-NOT-FOUND))
+    (permission (unwrap! (map-get? computational-node-permissions { node-id: node-id, requester: requester }) (err ERR-REQUEST-NOT-FOUND)))
     (request-id (get request-id permission))
   )
     ;; Owner-only access control
-    (asserts! (is-computational-node-owner node-id sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-computational-node-owner node-id sender) (err ERR-NOT-AUTHORIZED))
     
     ;; Revoke permission
     (map-set computational-node-permissions

@@ -2,37 +2,23 @@
 name = "polynomial-table"
 description = "A Clarity smart contract for managing polynomial-based computational tables and access control"
 authors = ["Polynomial Labs"]
-support-url = "https://github.com/polynomial-labs/polynomial-table"
-build-version = "0.1.0"
-
-[contracts]
-polynomial-access = { path = "contracts/polynomial-access.clar", depends-on = ["polynomial-registry"] }
-polynomial-registry = { path = "contracts/polynomial-registry.clar" }
-
-[repl.analysis]
-passes = ["check_publisher_balance"]
-
-[repl]
-cost_model = "1.0.0"
-name = "loopnode-iot-management"
-authors = []
-description = ""
 telemetry = false
 requirements = []
-[contracts.loopnode-access]
-path = "contracts/loopnode-access.clar"
-depends_on = []
 
-[contracts.loopnode-registry]
-path = "contracts/loopnode-registry.clar"
-depends_on = []
+[contracts.polynomial-access]
+path = "contracts/polynomial-access.clar"
+depends-on = ["polynomial-registry"]
+[contracts.polynomial-registry]
+path = "contracts/polynomial-registry.clar"
+depends-on = []
+
+[repl.analysis]
+passes = ["check_checker"]
 
 [repl]
 costs_version = 2
 parser_version = 2
 
-[repl.analysis]
-passes = ["check_checker"]
 
 [repl.analysis.check_checker]
 strict = false
